@@ -2,22 +2,24 @@
 
 source common.sh
 
-needLocalStore "“min-free” and “max-free” are daemon options"
+needLocalStore '“min-free” and “max-free” are daemon options'
 
 TODO_NixOS
 
 clearStore
 
+export garbage1 garbage2
+
 garbage1=$(nix store add-path --name garbage1 ./nar-access.sh)
 garbage2=$(nix store add-path --name garbage2 ./nar-access.sh)
 garbage3=$(nix store add-path --name garbage3 ./nar-access.sh)
 
-ls -l $garbage3
-POSIXLY_CORRECT=1 du $garbage3
+ls -l "$garbage3"
+POSIXLY_CORRECT=1 du "$garbage3"
 
 fake_free=$TEST_ROOT/fake-free
 export _NIX_TEST_FREE_SPACE_FILE=$fake_free
-echo 1100 > $fake_free
+echo 1100 > "$fake_free"
 
 fifoLock=$TEST_ROOT/fifoLock
 mkfifo "$fifoLock"
@@ -65,11 +67,11 @@ with import ./config.nix; mkDerivation {
 EOF
 )
 
-nix build --impure -v -o $TEST_ROOT/result-A -L --expr "$expr" \
+nix build --impure -v -o "$TEST_ROOT/result-A" -L --expr "$expr" \
     --min-free 1K --max-free 2K --min-free-check-interval 1 &
 pid1=$!
 
-nix build --impure -v -o $TEST_ROOT/result-B -L --expr "$expr2" \
+nix build --impure -v -o "$TEST_ROOT/result-B" -L --expr "$expr2" \
     --min-free 1K --max-free 2K --min-free-check-interval 1 &
 pid2=$!
 
@@ -77,9 +79,9 @@ pid2=$!
 # If the first build fails, we need to postpone the failure to still allow
 # the second one to finish
 wait "$pid1" || FIRSTBUILDSTATUS=$?
-echo "unlock" > $fifoLock
-( exit ${FIRSTBUILDSTATUS:-0} )
+echo "unlock" > "$fifoLock"
+( exit "${FIRSTBUILDSTATUS:-0}" )
 wait "$pid2"
 
-[[ foo = $(cat $TEST_ROOT/result-A/bar) ]]
-[[ foo = $(cat $TEST_ROOT/result-B/bar) ]]
+[[ foo = $(cat "$TEST_ROOT/result-A/bar") ]]
+[[ foo = $(cat "$TEST_ROOT/result-B/bar") ]]

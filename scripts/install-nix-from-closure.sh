@@ -76,7 +76,7 @@ while [ $# -gt 0 ]; do
         --no-channel-add)
             export NIX_INSTALLER_NO_CHANNEL_ADD=1;;
         --daemon-user-count)
-            export NIX_USER_COUNT=$2
+            export NIX_USER_COUNT="$2"
             shift;;
         --no-modify-profile)
             NIX_INSTALLER_NO_MODIFY_PROFILE=1;;
@@ -128,7 +128,7 @@ done
 
 if [ "$INSTALL_MODE" = "daemon" ]; then
     printf '\e[1;31mSwitching to the Multi-user Installer\e[0m\n'
-    exec "$self/install-multi-user" $ACTIONS # let ACTIONS split
+    exec "$self/install-multi-user" "$ACTIONS" # let ACTIONS split
     exit 0
 fi
 

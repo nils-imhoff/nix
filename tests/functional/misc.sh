@@ -14,7 +14,7 @@ source common.sh
 nix-env --version | grep "$version"
 
 nix_env=$(type -P nix-env)
-(PATH=""; ! $nix_env --help 2>&1 ) | grepQuiet -F "The 'man' command was not found, but it is needed for 'nix-env' and some other 'nix-*' commands' help text. Perhaps you could install the 'man' command?"
+(PATH="" ! "$nix_env" --help 2>&1 ) | grepQuiet -F "The 'man' command was not found, but it is needed for 'nix-env' and some other 'nix-*' commands' help text. Perhaps you could install the 'man' command?"
 
 # Usage errors.
 expect 1 nix-env --foo 2>&1 | grep "no operation"
@@ -22,12 +22,12 @@ expect 1 nix-env -q --foo 2>&1 | grep "unknown flag"
 
 # Eval Errors.
 eval_arg_res=$(nix-instantiate --eval -E 'let a = {} // a; in a.foo' 2>&1 || true)
-echo $eval_arg_res | grep "at «string»:1:15:"
-echo $eval_arg_res | grep "infinite recursion encountered"
+echo "$eval_arg_res" | grep "at «string»:1:15:"
+echo "$eval_arg_res" | grep "infinite recursion encountered"
 
 eval_stdin_res=$(echo 'let a = {} // a; in a.foo' | nix-instantiate --eval -E - 2>&1 || true)
-echo $eval_stdin_res | grep "at «stdin»:1:15:"
-echo $eval_stdin_res | grep "infinite recursion encountered"
+echo "$eval_stdin_res" | grep "at «stdin»:1:15:"
+echo "$eval_stdin_res" | grep "infinite recursion encountered"
 
 # Attribute path errors
 expectStderr 1 nix-instantiate --eval -E '{}' -A '"x' | grepQuiet "missing closing quote in selection path"
@@ -40,7 +40,7 @@ expectStderr 1 nix-instantiate --eval -E '[]' -A '1' | grepQuiet "out of range"
 # NOTE(cole-h): behavior is different depending on the order, which is why we test an unknown option
 # before and after the `'{}'`!
 out="$(expectStderr 0 nix-instantiate --option foobar baz --expr '{}')"
-[[ "$(echo "$out" | grep foobar | wc -l)" = 1 ]]
+[[ "$(echo "$out" | grep -c foobar)" = 1 ]]
 
 out="$(expectStderr 0 nix-instantiate '{}' --option foobar baz --expr )"
-[[ "$(echo "$out" | grep foobar | wc -l)" = 1 ]]
+[[ "$(echo "$out" | grep -c foobar)" = 1 ]]
