@@ -3,7 +3,7 @@
 source common.sh
 
 clearStoreIfPossible
-
+export outPath 
 outPath=$(nix-build --no-out-link -E "
 with import ./config.nix;
 

@@ -6,13 +6,13 @@ TODO_NixOS
 
 clearStoreIfPossible
 
-rm -f $TEST_ROOT/result*
+rm -f "$TEST_ROOT/result*"
 
 # Test whether the output names match our expectations
 outPath=$(nix-instantiate multiple-outputs.nix --eval -A nameCheck.out.outPath)
-[ "$(echo "$outPath" | sed -E 's_^".*/[^-/]*-([^/]*)"$_\1_')" = "multiple-outputs-a" ]
+[ "$(echo "$outPath" | sed -E "s_^\".*/[^-/]*-([^/]*)\"_\1_")" = "multiple-outputs-a" ]
 outPath=$(nix-instantiate multiple-outputs.nix --eval -A nameCheck.dev.outPath)
-[ "$(echo "$outPath" | sed -E 's_^".*/[^-/]*-([^/]*)"$_\1_')" = "multiple-outputs-a-dev" ]
+[ "$(echo "$outPath" | sed -E "s_^\".*/[^-/]*-([^/]*)\"_\1_")" = "multiple-outputs-a-dev" ]
 
 # Test whether read-only evaluation works when referring to the
 # ‘drvPath’ attribute.
@@ -23,14 +23,14 @@ echo "evaluating c..."
 # outputs.
 drvPath=$(nix-instantiate multiple-outputs.nix -A c)
 #[ "$drvPath" = "$drvPath2" ]
-grepQuiet 'multiple-outputs-a.drv",\["first","second"\]' $drvPath
-grepQuiet 'multiple-outputs-b.drv",\["out"\]' $drvPath
+grepQuiet 'multiple-outputs-a.drv",\["first","second"\]' "$drvPath"
+grepQuiet 'multiple-outputs-b.drv",\["out"\]' "$drvPath"
 
 # While we're at it, test the ‘unsafeDiscardOutputDependency’ primop.
 outPath=$(nix-build multiple-outputs.nix -A d --no-out-link)
-drvPath=$(cat $outPath/drv)
-outPath=$(nix-store -q $drvPath)
-(! [ -e "$outPath" ])
+drvPath=$(cat "$outPath/drv")
+outPath=$(nix-store -q "$drvPath")
+{ ! [ -e "$outPath" ] && exit1; }
 
 # Do a build of something that depends on a derivation with multiple
 # outputs.
@@ -40,33 +40,33 @@ echo "output path is $outPath"
 [ "$(cat "$outPath/file")" = "success" ]
 
 # Test nix-build on a derivation with multiple outputs.
-outPath1=$(nix-build multiple-outputs.nix -A a -o $TEST_ROOT/result)
-[ -e $TEST_ROOT/result-first ]
-(! [ -e $TEST_ROOT/result-second ])
-nix-build multiple-outputs.nix -A a.all -o $TEST_ROOT/result
-[ "$(cat $TEST_ROOT/result-first/file)" = "first" ]
-[ "$(cat $TEST_ROOT/result-second/file)" = "second" ]
-[ "$(cat $TEST_ROOT/result-second/link/file)" = "first" ]
-hash1=$(nix-store -q --hash $TEST_ROOT/result-second)
+outPath1=$(nix-build multiple-outputs.nix -A a -o "$TEST_ROOT/result")
+[ -e "$TEST_ROOT/result-first" ]
+{ ! [ -e "$TEST_ROOT"/result-second ] && exit 1; }
+nix-build multiple-outputs.nix -A a.all -o "$TEST_ROOT/result"
+[ "$(cat "$TEST_ROOT/result-first/file")" = "first" ]
+[ "$(cat "$TEST_ROOT/result-second/file")" = "second" ]
+[ "$(cat "$TEST_ROOT/result-second/link/file")" = "first" ]
+hash1=$(nix-store -q --hash "$TEST_ROOT/result-second")
 
-outPath2=$(nix-build $(nix-instantiate multiple-outputs.nix -A a) --no-out-link)
-[[ $outPath1 = $outPath2 ]]
+outPath2=$(nix-build "$(nix-instantiate multiple-outputs.nix -A a)" --no-out-link)
+[[ $outPath1 = "$outPath2" ]]
 
-outPath2=$(nix-build $(nix-instantiate multiple-outputs.nix -A a.first) --no-out-link)
-[[ $outPath1 = $outPath2 ]]
+outPath2=$(nix-build "$(nix-instantiate multiple-outputs.nix -A a.first)" --no-out-link)
+[[ $outPath1 = "$outPath2" ]]
 
-outPath2=$(nix-build $(nix-instantiate multiple-outputs.nix -A a.second) --no-out-link)
-[[ $(cat $outPath2/file) = second ]]
+outPath2=$(nix-build "$(nix-instantiate multiple-outputs.nix -A a.second)" --no-out-link)
+[[ $(cat "$outPath2/file") = second ]]
 
-[[ $(nix-build $(nix-instantiate multiple-outputs.nix -A a.all) --no-out-link | wc -l) -eq 2 ]]
+[[ $(nix-build "$(nix-instantiate multiple-outputs.nix -A a.all)" --no-out-link | wc -l) -eq 2 ]]
 
 # Delete one of the outputs and rebuild it.  This will cause a hash
 # rewrite.
-env -u NIX_REMOTE nix store delete $TEST_ROOT/result-second --ignore-liveness
-nix-build multiple-outputs.nix -A a.all -o $TEST_ROOT/result
-[ "$(cat $TEST_ROOT/result-second/file)" = "second" ]
-[ "$(cat $TEST_ROOT/result-second/link/file)" = "first" ]
-hash2=$(nix-store -q --hash $TEST_ROOT/result-second)
+env -u NIX_REMOTE nix store delete "$TEST_ROOT/result-second" --ignore-liveness
+nix-build multiple-outputs.nix -A a.all -o "$TEST_ROOT/result"
+[ "$(cat "$TEST_ROOT/result-second/file")" = "second" ]
+[ "$(cat "$TEST_ROOT/result-second/link/file")" = "first" ]
+hash2=$(nix-store -q --hash "$TEST_ROOT/result-second")
 [ "$hash1" = "$hash2" ]
 
 # Make sure that nix-build works on derivations with multiple outputs.
@@ -82,11 +82,11 @@ fi
 
 # Do a GC. This should leave an empty store.
 echo "collecting garbage..."
-rm $TEST_ROOT/result*
+rm "$TEST_ROOT/result*"
 nix-store --gc --keep-derivations --keep-outputs
 nix-store --gc --print-roots
-rm -rf $NIX_STORE_DIR/.links
-rmdir $NIX_STORE_DIR
+rm -rf "$NIX_STORE_DIR/.links"
+rmdir "$NIX_STORE_DIR"
 
 expect 1 nix build -f multiple-outputs.nix invalid-output-name-1 2>&1 | grep 'contains illegal character'
 expect 1 nix build -f multiple-outputs.nix invalid-output-name-2 2>&1 | grep 'contains illegal character'
