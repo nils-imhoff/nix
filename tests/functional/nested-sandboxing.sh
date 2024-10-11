@@ -10,6 +10,6 @@ requireSandboxSupport
 
 source ./nested-sandboxing/command.sh
 
-expectStderr 100 runNixBuild badStoreUrl 2 | grepQuiet '`sandbox-build-dir` must not contain'
+expectStderr 100 runNixBuild badStoreUrl 2 | grepQuiet "$(sandbox-build-dir) must not contain"
 
 runNixBuild goodStoreUrl 5

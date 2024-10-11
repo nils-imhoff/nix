@@ -54,7 +54,8 @@ readonly NIX_INSTALLED_NIX="@nix@"
 readonly NIX_INSTALLED_CACERT="@cacert@"
 #readonly NIX_INSTALLED_NIX="/nix/store/j8dbv5w6jl34caywh2ygdy88knx1mdf7-nix-2.3.6"
 #readonly NIX_INSTALLED_CACERT="/nix/store/7dxhzymvy330i28ii676fl1pqwcahv2f-nss-cacert-3.49.2"
-readonly EXTRACTED_NIX_PATH="$(dirname "$0")"
+readonly EXTRACTED_NIX_PATH
+EXTRACTED_NIX_PATH="$(dirname "$0")"
 
 readonly ROOT_HOME=~root
 
@@ -144,7 +145,7 @@ EOF
 }
 
 nix_user_for_core() {
-    printf "$NIX_BUILD_USER_NAME_TEMPLATE" "$1"
+   printf "%s" "$NIX_BUILD_USER_NAME_TEMPLATE" "$1"
 }
 
 nix_uid_for_core() {
@@ -367,10 +368,12 @@ _sudo() {
 
 # Ensure that $TMPDIR exists if defined.
 if [[ -n "${TMPDIR:-}" ]] && [[ ! -d "${TMPDIR:-}" ]]; then
-    mkdir -m 0700 -p "${TMPDIR:-}"
+    mkdir -p "${TMPDIR:-}"
+    chmod 0700 "${TMPDIR:-}"
 fi
 
-readonly SCRATCH=$(mktemp -d)
+readonly SCRATCH
+SCRATCH=$(mktemp -d)
 finish_cleanup() {
     rm -rf "$SCRATCH"
 }
@@ -659,7 +662,8 @@ create_directories() {
         # hiding behind || true, and the general state
         # should be one the user can repair once they
         # figure out where chown is...
-        local get_chr_own="$(PATH="$(getconf PATH 2>/dev/null)" command -vp chown)"
+        local get_chr_own
+        get_chr_own="$(PATH="$(getconf PATH 2>/dev/null)" command -vp chown)"
         if [[ -z "$get_chr_own" ]]; then
             get_chr_own="$(command -v chown)"
         fi
