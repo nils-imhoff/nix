@@ -39,20 +39,30 @@ nix-build check.nix -A failed --argstr checkBuildId "$checkBuildId" \
 if checkBuildTempDirRemoved "$TEST_ROOT/log"; then false; fi
 
 test_custom_build_dir() {
-  local customBuildDir="$TEST_ROOT/custom-build-dir"
+    local customBuildDir="$TEST_ROOT/custom-build-dir"
 
-  # Nix does not create the parent directories, and perhaps it shouldn't try to
-  # decide the permissions of build-dir.
-  mkdir "$customBuildDir"
-  nix-build check.nix -A failed --argstr checkBuildId "$checkBuildId" \
-      --no-out-link --keep-failed --option build-dir "$TEST_ROOT/custom-build-dir" 2> "$TEST_ROOT/log" || status=$?
-  [ "$status" = "100" ]
-  [[ 1 == "$(count "$customBuildDir/nix-build-"*)" ]]
-    local buildDir="$customBuildDir/nix-build-*"
-  if [[ -e $buildDir/build ]]; then
-      buildDir=$buildDir/build
-  fi
-  grep "$checkBuildId $buildDir/checkBuildId"
+    mkdir "$customBuildDir"
+    nix-build check.nix -A failed --argstr checkBuildId "$checkBuildId" \
+        --no-out-link --keep-failed --option build-dir "$customBuildDir" 2> "$TEST_ROOT/log" || status=$?
+    [ "$status" = "100" ]
+    [[ 1 == "$(count "$customBuildDir/nix-build-"*)" ]]
+
+    local buildDirPath
+    for buildDirPath in "$customBuildDir"/nix-build-*; do
+        if [[ -e $buildDirPath/build ]]; then
+            buildDir="$buildDirPath/build"
+        else
+            buildDir="$buildDirPath"
+        fi
+        for file in "$buildDir"/checkBuildId*; do
+            if [ -f "$file" ]; then
+                grep "$checkBuildId" "$file"
+            else
+                echo "No build ID file found at expected path: $file"
+                exit 1
+            fi
+        done
+    done
 }
 test_custom_build_dir
 

@@ -56,7 +56,7 @@ nix profile install "$flake1Dir" -L
 nix profile list | grep -A4 'Name:.*flake1' | grep 'Locked flake URL:.*narHash'
 [[ $("$TEST_HOME/.nix-profile/bin/hello") = "Hello World" ]]
 [ -e "$TEST_HOME/.nix-profile/share/man" ]
-{ ! [ -e "$TEST_HOME/.nix-profile/include" ] && exit1; }
+{ ! [ -e "$TEST_HOME/.nix-profile/include" ] || exit 1; }
 nix profile history
 nix profile history | grep "packages.$system.default: ∅ -> 1.0"
 nix profile diff-closures | grep 'env-manifest.nix: ε → ∅'

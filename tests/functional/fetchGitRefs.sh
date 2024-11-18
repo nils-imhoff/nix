@@ -58,7 +58,7 @@ invalid_ref() {
     expect 1 nix --debug eval --raw --impure --expr "(builtins.fetchGit { url = $repo; ref = ''$1''; }).outPath" 2>&1 | grep 'invalid Git branch/tag name' >/dev/null
 }
 
-
+ref_name="${1:-default_ref}"
 valid_ref 'foox'
 valid_ref '1337'
 valid_ref 'foo.baz'
@@ -67,7 +67,7 @@ valid_ref 'foo./bar'
 valid_ref 'heads/foo@bar'
 valid_ref "$(printf 'heads/fu\303\237')"
 valid_ref 'foo-bar-baz'
-valid_ref "$1"
+valid_ref "$ref_name"
 valid_ref 'foo.locke'
 
 invalid_ref 'refs///heads/foo'

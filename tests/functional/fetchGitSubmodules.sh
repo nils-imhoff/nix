@@ -126,7 +126,7 @@ r=$(nix eval --raw --expr "builtins.fetchGit { url = file://$rootRepo; rev = \"$
 [[ ! -e $r/missing ]]
 
 # Test relative submodule URLs.
-rm "$TEST_HOME/.cache/nix/fetcher-cache*"
+rm -f "$TEST_HOME/.cache/nix/fetcher-cache*"
 rm -rf "$rootRepo/.git" "$rootRepo/.gitmodules" "$rootRepo/sub"
 initGitRepo "$rootRepo"
 git -C "$rootRepo" submodule add ../gitSubmodulesSub sub
@@ -136,7 +136,7 @@ pathWithRelative=$(nix eval --raw --expr "(builtins.fetchGit { url = file://$roo
 diff -r -x .gitmodules "$pathWithSubmodules" "$pathWithRelative"
 
 # Test clones that have an upstream with relative submodule URLs.
-rm "$TEST_HOME/.cache/nix/fetcher-cache*"
+rm -f "$TEST_HOME/.cache/nix/fetcher-cache*"
 cloneRepo=$TEST_ROOT/a/b/gitSubmodulesClone # NB /a/b to make the relative path not work relative to $cloneRepo
 git clone "$rootRepo" "$cloneRepo"
 pathIndirect=$(nix eval --raw --expr "(builtins.fetchGit { url = file://$cloneRepo; rev = \"$rev2\"; submodules = true; }).outPath")
@@ -157,13 +157,13 @@ echo "/exclude-from-sub export-ignore" >> "$rootRepo/sub/.gitattributes"
 echo nope > "$rootRepo/sub/exclude-from-sub"
 # TBD possible semantics for submodules + exportIgnore
 # echo aye > $rootRepo/sub/exclude-from-root
-git -C "$rootRepo/sub add .gitattributes exclude-from-sub"
+git -C "$rootRepo/sub" add .gitattributes exclude-from-sub
 git -C "$rootRepo/sub" commit -m "Add export-ignore (sub)"
 
 git -C "$rootRepo" add sub
 git -C "$rootRepo" commit -m "Update submodule"
 
-git -C "$rootRepo"status
+git -C "$rootRepo" status
 
 # # TBD: not supported yet, because semantics are undecided and current implementation leaks rules from the root to submodules
 # # exportIgnore can be used with submodules

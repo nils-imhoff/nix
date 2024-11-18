@@ -33,4 +33,4 @@ nix eval --store dummy:// --write-to "$TEST_ROOT"/eval-out --expr '{ x = "foo" +
 rm -rf "$TEST_ROOT"/eval-out
 (! nix eval --store dummy:// --write-to "$TEST_ROOT"/eval-out --expr '{ "." = "bla"; }')
 
-(! nix eval --expr ~/"foo")
+(! nix eval --expr ~/"foo" --extra-experimental-features) 

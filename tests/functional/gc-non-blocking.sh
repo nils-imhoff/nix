@@ -26,7 +26,7 @@ running=$TEST_ROOT/running
 touch "$running"
 
 # Start GC.
-(_NIX_TEST_GC_SYNC_1=$fifo1 _NIX_TEST_GC_SYNC_2=$fifo2 nix-store --gc -vvvvv; rm "$running") &
+(_NIX_TEST_GC_SYNC_1=$fifo1 _NIX_TEST_GC_SYNC_2=$fifo2 nix-store --gc -vvvvv; [ -e "$running" ] && rm "$running") &
 pid=$!
 
 sleep 2
@@ -47,6 +47,6 @@ outPath=$(nix-build --max-silent-time 60 -o "$TEST_ROOT/result" -E "
 wait $pid
 wait $pid2
 
-{ ! test -e "$running" && exit 1; }
-{ ! test -e "$dummy" && exit 1; }
+{ ! test -e "$running" || exit 1; }
+{ ! test -e "$dummy" || exit 1; }
 test -e "$outPath"

@@ -24,8 +24,8 @@ touch "$path2"/bad
 # The path can be repaired by rebuilding the derivation.
 nix-store --verify --check-contents --repair
 
-{ ! [ -e "$path2"/bad ] && exit1; }
-{ ! [ -w "$path2" ] && exit1; }
+{ ! [ -e "$path2"/bad ] || exit 1; }
+{ ! [ -w "$path2" ] || exit 1; }
 
 nix-store --verify-path "$path2"
 
@@ -34,7 +34,8 @@ nix-store --verify-path "$path2"
 chmod u+w "$path2"
 touch "$path2"/bad
 
-nix-store --delete "$(nix-store -q --referrers-closure "$(nix-store -qd "$path2")")"
+paths=$(nix-store -q --referrers-closure "$(nix-store -qd "$path2")" | tr '\n' ' ')
+echo "$paths" | xargs nix-store --delete
 
 (! nix-store --verify --check-contents --repair)
 

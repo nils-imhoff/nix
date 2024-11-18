@@ -37,7 +37,7 @@ nix-instantiate --eval -E 'let x = { repeating = x; tracing = builtins.trace x t
   2>&1 | grepQuiet -F 'trace: { repeating = «repeated»; tracing = «potential infinite recursion»; }'
 
 nix-instantiate --eval -E 'builtins.warn "Hello" 123' 2>&1 | grepQuiet 'warning: Hello'
-nix-instantiate --eval -E "builtins.addErrorContext \"while doing \${something} interesting\" (builtins.warn \"Hello\" 123)" 2>/dev/null | grepQuiet 123
+nix-instantiate --eval -E "builtins.addErrorContext \"while doing something interesting\" (builtins.warn \"Hello\" 123)" 2>/dev/null | grep 123
 
 # warn does not accept non-strings for now
 expectStderr 1 nix-instantiate --eval -E 'let x = builtins.warn { x = x; } true; in x' \

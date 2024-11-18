@@ -39,9 +39,9 @@ input1="$(nix-build nix-build-examples.nix -A input1 --no-out-link)"
 input2="$(nix-build nix-build-examples.nix -A input2 --no-out-link)"
 body="$(nix-build nix-build-examples.nix -A body --no-out-link)"
 
-outPathsA="$(nix-build nix-build-examples.nix -A input0 -A input1 -A input2 -A body --no-out-link)"
+outPathsA=$(nix-build nix-build-examples.nix -A input0 -A input1 -A input2 -A body --no-out-link | xargs)
 [[ "$outPathsA" = "$input0 $input1 $input2 $body" ]]
 
 # test a different ordering to make sure it fails, not just in 23 out of 24 permutations
-outPathsB="$(nix-build nix-build-examples.nix -A body -A input1 -A input2 -A input0 --no-out-link)"
+outPathsB=$(nix-build nix-build-examples.nix -A body -A input1 -A input2 -A input0 --no-out-link | xargs)
 [[ "$outPathsB" = "$body $input1 $input2 $input0" ]]

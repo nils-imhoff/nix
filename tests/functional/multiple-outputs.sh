@@ -30,7 +30,7 @@ grepQuiet 'multiple-outputs-b.drv",\["out"\]' "$drvPath"
 outPath=$(nix-build multiple-outputs.nix -A d --no-out-link)
 drvPath=$(cat "$outPath/drv")
 outPath=$(nix-store -q "$drvPath")
-{ ! [ -e "$outPath" ] && exit1; }
+{ [ ! -e "$outPath" ] || exit 1; }
 
 # Do a build of something that depends on a derivation with multiple
 # outputs.
@@ -42,7 +42,7 @@ echo "output path is $outPath"
 # Test nix-build on a derivation with multiple outputs.
 outPath1=$(nix-build multiple-outputs.nix -A a -o "$TEST_ROOT/result")
 [ -e "$TEST_ROOT/result-first" ]
-{ ! [ -e "$TEST_ROOT"/result-second ] && exit 1; }
+{ ! [ -e "$TEST_ROOT"/result-second ] || exit 1; }
 nix-build multiple-outputs.nix -A a.all -o "$TEST_ROOT/result"
 [ "$(cat "$TEST_ROOT/result-first/file")" = "first" ]
 [ "$(cat "$TEST_ROOT/result-second/file")" = "second" ]
@@ -58,7 +58,8 @@ outPath2=$(nix-build "$(nix-instantiate multiple-outputs.nix -A a.first)" --no-o
 outPath2=$(nix-build "$(nix-instantiate multiple-outputs.nix -A a.second)" --no-out-link)
 [[ $(cat "$outPath2/file") = second ]]
 
-[[ $(nix-build "$(nix-instantiate multiple-outputs.nix -A a.all)" --no-out-link | wc -l) -eq 2 ]]
+count=$(nix-instantiate multiple-outputs.nix -A a.all | xargs -I{} nix-build {} --no-out-link | wc -l)
+[[ $count -eq 2 ]]
 
 # Delete one of the outputs and rebuild it.  This will cause a hash
 # rewrite.
@@ -82,7 +83,7 @@ fi
 
 # Do a GC. This should leave an empty store.
 echo "collecting garbage..."
-rm "$TEST_ROOT/result*"
+rm "$TEST_ROOT"/result*
 nix-store --gc --keep-derivations --keep-outputs
 nix-store --gc --print-roots
 rm -rf "$NIX_STORE_DIR/.links"

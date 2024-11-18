@@ -10,7 +10,7 @@ outPath=$(nix-build dependencies.nix --no-out-link)
 
 nix-store --export "$outPath" > "$TEST_ROOT/exp"
 
-nix-store --export "$(nix-store -qR "$outPath")" > "$TEST_ROOT/exp_all"
+nix-store -qR "$outPath" | xargs nix-store --export > "$TEST_ROOT"/exp_all
 
 if nix-store --export "$outPath" >/dev/full ; then
     echo "exporting to a bad file descriptor should fail"
@@ -30,7 +30,7 @@ clearStore
 
 nix-store --import < "$TEST_ROOT/exp_all"
 
-nix-store --export "$(nix-store -qR "$outPath")" > "$TEST_ROOT/exp_all2"
+nix-store -qR "$outPath" | xargs nix-store --export > "$TEST_ROOT"/exp_all2
 
 
 clearStore

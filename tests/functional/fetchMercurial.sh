@@ -82,7 +82,7 @@ mkdir "$repo/dir1" "$repo/dir2"
 echo foo > "$repo/dir1/foo"
 echo bar > "$repo/bar"
 echo bar > "$repo/dir2/bar"
-hg add --cwd "$repo dir1/foo"
+hg add --cwd "$repo" dir1/foo
 hg rm --cwd "$repo" hello
 
 path2=$(nix eval --impure --raw --expr "(builtins.fetchMercurial $repo).outPath")
